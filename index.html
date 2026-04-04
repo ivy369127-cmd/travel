@@ -2,70 +2,89 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>旅行小助手</title>
     <style>
-        /* 沉穩深藍色系 */
-        :root { --primary: #2e4163; --primary-light: #4a5f8a; --bg: #f8f9fa; --text: #2c3e50; --card: #ffffff; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; }
-        body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; line-height: 1.6; }
-        .page { display: none; padding: 20px; animation: slideUp 0.3s ease; }
+        :root { 
+            --primary: #007AFF; 
+            --primary-light: #5AC8FA; 
+            --bg: #F2F2F7; 
+            --card: #FFFFFF; 
+            --text: #1C1C1E; 
+            --text-muted: #8E8E93;
+            --danger: #FF3B30;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding-bottom: 100px; line-height: 1.5; -webkit-tap-highlight-color: transparent; }
+        
+        .page { display: none; padding: 16px; animation: fadeIn 0.3s ease; }
         .page.active { display: block; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
         header { 
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: white; padding: 25px 20px; font-size: 1.3rem; font-weight: 600; 
-            position: sticky; top: 0; z-index: 10; border-radius: 0 0 20px 20px;
-            box-shadow: 0 4px 12px rgba(46, 65, 99, 0.2); text-align: center;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: var(--text); padding: 20px 20px 15px; font-size: 1.5rem; font-weight: 800; 
+            position: sticky; top: 0; z-index: 50; text-align: center;
+            border-bottom: 0.5px solid rgba(0,0,0,0.1);
         }
+        
         .card { 
-            background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 15px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03);
+            background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 16px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: none;
         }
         
-        .stat-item { display: flex; align-items: center; margin-bottom: 10px; font-size: 1rem; }
-        .stat-label { color: #666; margin-right: 10px; }
-        .stat-value { color: var(--primary); font-weight: 800; }
+        .stat-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 1.05rem; }
+        .stat-label { color: var(--text-muted); font-weight: 500; }
+        .stat-value { color: var(--text); font-weight: 700; }
         
-        .price-box { background: #f1f4f8; padding: 15px; border-radius: 12px; margin-top: 15px; text-align: right; border-left: 4px solid var(--primary); }
-        .price-jpy { color: var(--primary); font-size: 1.8rem; font-weight: 900; line-height: 1; display: block; margin-bottom: 5px;}
-        .price-twd { color: #95a5a6; font-size: 0.9rem; font-weight: 500; display: block;}
+        .price-box { background: #F2F2F7; padding: 16px; border-radius: 16px; margin-top: 16px; text-align: right; border-left: 4px solid var(--primary); }
+        .price-jpy { color: var(--primary); font-size: 1.8rem; font-weight: 800; line-height: 1.2; display: block; margin-bottom: 2px;}
+        .price-twd { color: var(--text-muted); font-size: 0.95rem; font-weight: 500; display: block;}
         
         .bottom-nav { 
-            position: fixed; bottom: 0; width: 100%; background: rgba(255, 255, 255, 0.95);
+            position: fixed; bottom: 0; width: 100%; background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             display: flex; justify-content: space-around; 
-            padding: 12px 0; box-shadow: 0 -2px 15px rgba(0,0,0,0.05); z-index: 100; border-top: 1px solid #eee;
+            padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); 
+            border-top: 0.5px solid rgba(0,0,0,0.1); z-index: 100;
         }
-        .nav-item { text-align: center; font-size: 0.75rem; color: #95a5a6; cursor: pointer; flex: 1; }
-        .nav-item.active { color: var(--primary); font-weight: bold; }
-        .nav-icon { font-size: 1.6rem; display: block; margin-bottom: 2px; }
+        .nav-item { text-align: center; font-size: 0.7rem; color: var(--text-muted); cursor: pointer; flex: 1; transition: color 0.2s; font-weight: 500; }
+        .nav-item.active { color: var(--primary); font-weight: 700; }
+        .nav-icon { font-size: 1.6rem; display: block; margin-bottom: 4px; transition: transform 0.2s; }
+        .nav-item.active .nav-icon { transform: scale(1.15); }
+
+        button { 
+            background: var(--primary); color: white; border: none; padding: 14px 20px; 
+            border-radius: 14px; font-weight: 700; font-size: 1rem; cursor: pointer; 
+            transition: transform 0.1s, opacity 0.2s; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+        }
+        button:active { transform: scale(0.96); opacity: 0.9; }
+        .btn-outline { background: white; color: var(--primary); border: 2px solid var(--primary); box-shadow: none; }
+        .btn-small { background: #F2F2F7; color: var(--text); padding: 8px 16px; border-radius: 10px; font-size: 0.85rem; box-shadow: none; font-weight: 600; }
+        .btn-small.danger { background: #FFEEEE; color: var(--danger); }
+        .map-btn { background: #E5F1FF; color: var(--primary); width: 100%; margin-top: 12px; box-shadow: none; }
+        .map-route-btn { background: #FFF0F5; color: #D81B60; width: 100%; margin-top: 12px; box-shadow: none; }
         
-        button { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-        .btn-outline { background: white; color: var(--primary); border: 1px solid var(--primary); }
-        .btn-small { padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; white-space: nowrap; }
-        .btn-edit { background: #f0f0f0; color: #333; border: 1px solid #ddd; }
-        .btn-danger { background: #fff0f0; color: #ff4d4f; border: 1px solid #ffccd5; }
+        input, select, textarea { 
+            width: 100%; padding: 14px 16px; margin: 6px 0 16px 0; 
+            border: none; background: #F2F2F7; border-radius: 12px; 
+            font-size: 1rem; color: var(--text); outline: none; transition: background 0.2s;
+        }
+        input:focus, select:focus, textarea:focus { background: #E5E5EA; }
+        input[type="checkbox"] { width: 24px; height: 24px; accent-color: var(--primary); cursor: pointer; margin: 0; border-radius: 6px; }
         
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; background: #fff; }
-        .form-row { display: flex; gap: 10px; margin-bottom: 12px; }
-        .form-row input, .form-row select { margin-bottom: 0; }
-        .mb-12 { margin-bottom: 12px; }
-        
-        .strikethrough { opacity: 0.4; filter: grayscale(80%); }
+        .strikethrough { opacity: 0.5; filter: grayscale(50%); transition: all 0.3s; }
         .strikethrough span, .strikethrough b, .strikethrough p { text-decoration: line-through; }
-        input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--primary); cursor: pointer; margin: 0; }
-        .check-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+        .check-row { display: flex; align-items: center; gap: 14px; padding: 12px 0; }
+        .itinerary-item { border-left: 5px solid var(--primary); padding-left: 16px; margin-bottom: 16px; }
         
-        .map-btn { background: #f0f7ff; color: #007bff; width: 100%; margin-top: 10px; border: 1px solid #007bff; }
-        .map-route-btn { background: #fff0f5; color: #d81b60; width: 100%; margin-top: 10px; border: 1px solid #d81b60; }
-        .itinerary-item { border-left: 4px solid var(--primary); padding-left: 15px; margin-bottom: 15px; }
-        
-        .img-thumbnail { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; margin-top: 8px; display: block; cursor: pointer; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; }
-        .modal img { max-width: 95%; max-height: 90%; border-radius: 8px; }
+        .img-thumbnail { width: 80px; height: 80px; object-fit: cover; border-radius: 12px; margin-top: 10px; display: block; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal img { max-width: 90%; max-height: 85%; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
@@ -78,27 +97,27 @@
 
     <div id="home" class="page active">
         <div class="card">
-            <h2 style="color: var(--primary); margin-bottom: 15px;">📊 今日進度</h2>
+            <h2 style="margin-bottom: 20px; font-weight: 800; font-size: 1.4rem;">📊 今日進度</h2>
             <div class="stat-item"><span class="stat-label">🎒 行李準備</span><span class="stat-value" id="stat-luggage">0%</span></div>
             <div class="stat-item"><span class="stat-label">📅 行程完成</span><span class="stat-value" id="stat-iti-percent">0%</span></div>
             <div class="stat-item"><span class="stat-label">🛒 購物清單</span><span class="stat-value">已買 <span id="stat-shopping">0</span> / <span id="stat-shopping-total">0</span></span></div>
             
-            <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 12px; border-left: 5px solid var(--primary);">
-                <p style="color: var(--primary); font-size: 0.85rem; font-weight: bold; margin-bottom: 3px;">📍 匯率參考</p>
-                <p style="font-size: 1.4rem; font-weight: 900;">1 JPY = <span id="stat-rate">0.21</span> TWD</p>
-                <p style="font-size: 0.75rem; color: #999; margin-top: 2px;" id="rate-sync-info">自動同步中...</p>
+            <div style="margin-top: 20px; padding: 20px; background: #F2F2F7; border-radius: 16px;">
+                <p style="color: var(--primary); font-size: 0.9rem; font-weight: 700; margin-bottom: 4px;">📍 匯率參考</p>
+                <p style="font-size: 1.6rem; font-weight: 800;">1 JPY = <span id="stat-rate">0.21</span> TWD</p>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;" id="rate-sync-info">自動同步中...</p>
             </div>
         </div>
-        <div class="form-row">
-            <button onclick="nav('itinerary')" style="flex: 1;">查看行程</button>
-            <button onclick="nav('shopping')" class="btn-outline" style="flex: 1;">購物清單</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <button onclick="nav('itinerary')">查看行程</button>
+            <button onclick="nav('shopping')" class="btn-outline">購物清單</button>
         </div>
     </div>
 
     <div id="itinerary" class="page">
         <div class="card">
-            <h3 style="margin-bottom: 15px; color: var(--primary);">📝 加入新行程</h3>
-            <div class="form-row">
+            <h3 style="margin-bottom: 16px; font-weight: 700;">📝 加入新行程</h3>
+            <div style="display: flex; gap: 10px;">
                 <select id="new-iti-day" style="flex: 1;">
                     <option value="Day 1">Day 1</option><option value="Day 2">Day 2</option>
                     <option value="Day 3">Day 3</option><option value="Day 4">Day 4</option>
@@ -108,18 +127,18 @@
                 </select>
                 <input type="date" id="new-iti-date" style="flex: 1.5;">
             </div>
-            <div class="form-row">
+            <div style="display: flex; gap: 10px;">
                 <input type="time" id="new-iti-time" style="flex: 1;">
                 <input type="text" id="new-iti-end" placeholder="目的地" style="flex: 2;">
             </div>
-            <input type="text" id="new-iti-note" class="mb-12" placeholder="備註 (選填)">
+            <input type="text" id="new-iti-note" placeholder="備註 (選填)">
             <button onclick="addItinerary()" style="width: 100%;">新增行程</button>
         </div>
         
-        <div id="edit-iti-form-container" style="display: none; background: #fff; padding: 15px; border-radius: 12px; border: 2px solid var(--primary); margin-bottom: 20px;">
-            <h3 style="margin-bottom: 15px;">編輯行程</h3>
+        <div id="edit-iti-form-container" style="display: none; background: #fff; padding: 20px; border-radius: 20px; border: 2px solid var(--primary); margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,122,255,0.1);">
+            <h3 style="margin-bottom: 16px;">編輯行程</h3>
             <input type="hidden" id="edit-iti-id">
-            <div class="form-row">
+            <div style="display: flex; gap: 10px;">
                 <select id="edit-iti-day" style="flex: 1;">
                     <option value="Day 1">Day 1</option><option value="Day 2">Day 2</option>
                     <option value="Day 3">Day 3</option><option value="Day 4">Day 4</option>
@@ -129,12 +148,12 @@
                 </select>
                 <input type="date" id="edit-iti-date" style="flex: 1.5;">
             </div>
-            <div class="form-row">
+            <div style="display: flex; gap: 10px;">
                 <input type="time" id="edit-iti-time" style="flex: 1;">
                 <input type="text" id="edit-iti-end" placeholder="目的地" style="flex: 2;">
             </div>
-            <input type="text" id="edit-iti-note" class="mb-12" placeholder="備註 (選填)">
-            <div class="form-row" style="margin-bottom: 0;">
+            <input type="text" id="edit-iti-note" placeholder="備註 (選填)">
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
                 <button onclick="document.getElementById('edit-iti-form-container').style.display='none'" class="btn-outline" style="flex: 1;">取消</button>
                 <button onclick="saveEditIti()" style="flex: 2;">儲存</button>
             </div>
@@ -145,20 +164,20 @@
 
     <div id="luggage" class="page">
         <div class="card">
-            <h3 style="margin-bottom: 15px; color: var(--primary);">🎒 新增行李</h3>
-            <div class="form-row">
-                <input type="text" id="new-luggage" placeholder="新增行李..." style="flex:1.5;">
-                <input type="text" id="new-luggage-note" placeholder="備註 (選填)" style="flex:1;">
+            <h3 style="margin-bottom: 16px; font-weight: 700;">🎒 新增行李</h3>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <input type="text" id="new-luggage" placeholder="新增行李..." style="margin:0; flex:1.5;">
+                <input type="text" id="new-luggage-note" placeholder="備註 (選填)" style="margin:0; flex:1;">
             </div>
             <button onclick="addLuggage()" style="width: 100%;">添加行李</button>
         </div>
 
-        <div id="edit-lug-form-container" style="display: none; background: #fff; padding: 15px; border-radius: 12px; border: 2px solid var(--primary); margin-bottom: 20px;">
-            <h3 style="margin-bottom: 15px;">編輯行李</h3>
+        <div id="edit-lug-form-container" style="display: none; background: #fff; padding: 20px; border-radius: 20px; border: 2px solid var(--primary); margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,122,255,0.1);">
+            <h3 style="margin-bottom: 16px;">編輯行李</h3>
             <input type="hidden" id="edit-lug-id">
-            <input type="text" id="edit-lug-name" class="mb-12" placeholder="行李名稱">
-            <input type="text" id="edit-lug-note" class="mb-12" placeholder="備註 (選填)">
-            <div class="form-row" style="margin-bottom: 0;">
+            <input type="text" id="edit-lug-name" placeholder="行李名稱">
+            <input type="text" id="edit-lug-note" placeholder="備註 (選填)">
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
                 <button onclick="document.getElementById('edit-lug-form-container').style.display='none'" class="btn-outline" style="flex: 1;">取消</button>
                 <button onclick="saveEditLug()" style="flex: 2;">儲存</button>
             </div>
@@ -168,26 +187,26 @@
     </div>
 
     <div id="shopping" class="page">
-        <div class="form-row" style="margin-bottom: 15px;">
-            <button id="btn-filter-all" onclick="setShopFilter('all')" style="flex: 1;">總清單</button>
-            <button id="btn-filter-unpurchased" onclick="setShopFilter('unpurchased')" class="btn-outline" style="flex: 1;">尚未購買</button>
+        <button onclick="openAddForm()" style="width: 100%; margin-bottom: 16px;">＋ 新增商品</button>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; background: #E5E5EA; padding: 4px; border-radius: 16px;">
+            <button id="btn-filter-all" onclick="setShopFilter('all')" style="flex: 1; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 10px;">總清單</button>
+            <button id="btn-filter-unpurchased" onclick="setShopFilter('unpurchased')" style="flex: 1; background: transparent; color: var(--text-muted); box-shadow: none; border-radius: 12px; padding: 10px;">尚未購買</button>
         </div>
 
-        <button onclick="openAddForm()" style="width: 100%; margin-bottom: 20px;">＋ 新增商品</button>
-        
-        <div id="edit-form-container" style="display: none; background: #fff; padding: 15px; border-radius: 12px; border: 2px solid var(--primary); margin-bottom: 20px;">
-            <h3 id="form-title" style="margin-bottom: 15px;">新增商品</h3>
+        <div id="edit-form-container" style="display: none; background: #fff; padding: 20px; border-radius: 20px; border: 2px solid var(--primary); margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,122,255,0.1);">
+            <h3 id="form-title" style="margin-bottom: 16px;">新增商品</h3>
             <input type="hidden" id="edit-id">
-            <input type="text" id="edit-name" class="mb-12" placeholder="名稱">
-            <div class="form-row">
+            <input type="text" id="edit-name" placeholder="名稱">
+            <div style="display: flex; gap: 10px;">
                 <input type="number" id="edit-price" placeholder="日幣價格" style="flex:1;">
                 <input type="text" id="edit-shop" placeholder="購買地點" style="flex:1;">
             </div>
-            <input type="text" id="edit-note" class="mb-12" placeholder="備註 (選填)">
-            <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 6px;">加入/更新圖片 (選填)</label>
-            <input type="file" id="edit-image" accept="image/*" class="mb-12" style="padding: 8px;">
+            <input type="text" id="edit-note" placeholder="備註 (選填)">
+            <label style="font-size: 0.9rem; color: var(--text-muted); display: block; margin: 4px 0 8px 4px;">加入/更新圖片 (選填)</label>
+            <input type="file" id="edit-image" accept="image/*" style="padding: 12px; background: white; border: 1px dashed #ccc;">
             
-            <div class="form-row" style="margin-bottom: 0;">
+            <div style="display: flex; gap: 10px; margin-top: 16px;">
                 <button onclick="document.getElementById('edit-form-container').style.display='none'" class="btn-outline" style="flex: 1;">取消</button>
                 <button onclick="saveShoppingItem()" style="flex: 2;">儲存</button>
             </div>
@@ -198,16 +217,31 @@
 
     <div id="settings" class="page">
         <div class="card">
-            <h3 style="margin-bottom:15px; color:var(--primary);">⚙️ 系統設定</h3>
-            <button id="update-rate-btn" onclick="fetchLiveRate()" style="width: 100%; margin-bottom: 10px;">更新最新匯率</button>
-            <p id="settings-rate-display" style="text-align: center; font-size: 0.85rem; color: var(--primary); font-weight: bold; margin-bottom: 20px;"></p>
+            <h3 style="margin-bottom:20px; font-weight: 800;">⚙️ 匯率設定</h3>
             
-            <textarea id="backup-data" class="mb-12" placeholder="備份碼顯示於此..." style="height: 60px; font-size: 0.75rem;"></textarea>
-            <div class="form-row">
-                <button onclick="exportData()" style="flex:1; background: #4a5f8a;">導出</button>
-                <button onclick="importData()" style="flex:1; background: #4a5f8a;">導入</button>
+            <label style="font-size: 0.9rem; color: var(--text-muted); display: block; margin: 0 0 8px 4px;">手動設定匯率 (1 JPY = ? TWD)</label>
+            <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+                <input type="number" step="0.0001" id="manual-rate-input" placeholder="例如: 0.215" style="margin: 0; flex: 2;">
+                <button onclick="saveManualRate()" style="flex: 1;">儲存</button>
             </div>
-            <button onclick="resetData()" class="btn-danger" style="width: 100%; margin-top: 15px;">清空所有資料</button>
+
+            <div style="text-align: center; margin: 16px 0; color: #C7C7CC; font-size: 0.85rem; font-weight: 600;">— 或 —</div>
+            
+            <button id="update-rate-btn" onclick="fetchLiveRate()" class="btn-outline" style="width: 100%; margin-bottom: 10px;">🌐 從網路獲取最新匯率</button>
+            
+            <p id="settings-rate-display" style="text-align: center; font-size: 0.9rem; color: var(--primary); font-weight: 700; margin-bottom: 24px; background: #E5F1FF; padding: 10px; border-radius: 12px;"></p>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom:20px; font-weight: 800;">💾 資料備份</h3>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; margin-left: 4px;">把下方的亂碼複製起來傳到 LINE，換手機或電腦時貼上就能還原所有資料。</p>
+            <textarea id="backup-data" placeholder="備份碼顯示於此..." style="height: 80px; font-size: 0.8rem; line-height: 1.4;"></textarea>
+            <div style="display: flex; gap: 10px; margin-bottom: 24px;">
+                <button onclick="exportData()" style="flex:1; background: #34C759; box-shadow: 0 4px 12px rgba(52,199,89,0.2);">導出備份碼</button>
+                <button onclick="importData()" style="flex:1; background: #FF9500; box-shadow: 0 4px 12px rgba(255,149,0,0.2);">導入備份碼</button>
+            </div>
+            
+            <button onclick="resetData()" style="width: 100%; background: #FF3B30; box-shadow: 0 4px 12px rgba(255,59,48,0.2);">⚠️ 清空所有資料</button>
         </div>
     </div>
 
@@ -215,7 +249,7 @@
         <div id="nav-home" class="nav-item active" onclick="nav('home')"><span class="nav-icon">🏠</span>首頁</div>
         <div id="nav-luggage" class="nav-item" onclick="nav('luggage')"><span class="nav-icon">🎒</span>行李</div>
         <div id="nav-itinerary" class="nav-item" onclick="nav('itinerary')"><span class="nav-icon">📅</span>行程</div>
-        <div id="nav-shopping" class="nav-item" onclick="nav('shopping')"><span class="nav-icon">🛒</span>購物清單</div>
+        <div id="nav-shopping" class="nav-item" onclick="nav('shopping')"><span class="nav-icon">🛒</span>購物</div>
         <div id="nav-settings" class="nav-item" onclick="nav('settings')"><span class="nav-icon">⚙️</span>設定</div>
     </nav>
 
@@ -260,24 +294,24 @@
             }
             prevLocationByDay[item.date] = item.end;
 
-            const dateStr = item.realDate ? `<span style="margin-left:5px; color:#888;">(${item.realDate})</span>` : '';
-            const noteStr = item.note ? `<p style="font-size:0.85rem; color:#666; margin-top:6px; background:#f0f0f0; padding:4px 8px; border-radius:6px; display:inline-block;">📝 ${item.note}</p>` : '';
+            const dateStr = item.realDate ? `<span style="margin-left:6px; color:var(--text-muted);">${item.realDate}</span>` : '';
+            const noteStr = item.note ? `<p style="font-size:0.85rem; color:var(--text-muted); margin-top:8px; background:#F2F2F7; padding:6px 10px; border-radius:8px; display:inline-block;">📝 ${item.note}</p>` : '';
             
             container.innerHTML += `
             <div class="card itinerary-item ${item.checked?'strikethrough':''}">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div style="display:flex; gap:12px; flex:1;">
                         <input type="checkbox" ${item.checked?'checked':''} onchange="toggleIti(${item.id})">
                         <div style="flex:1;">
-                            <div style="font-size:0.8rem; color:#888; margin-bottom:2px;">${item.date} ${dateStr} <span style="color:var(--primary); font-weight:bold; margin-left:5px;">${item.time}</span></div>
-                            <p style="font-weight:bold; font-size:1.05rem;">${item.end}</p>
+                            <div style="font-size:0.85rem; color:var(--text-muted); font-weight:600; margin-bottom:4px;">${item.date} ${dateStr} <span style="color:var(--primary); margin-left:6px;">${item.time}</span></div>
+                            <p style="font-weight:700; font-size:1.1rem; color:var(--text);">${item.end}</p>
                             ${noteStr}
                             ${!item.checked ? `<br>${btnHtml}` : ''}
                         </div>
                     </div>
-                    <div style="display:flex; gap:6px; margin-left:10px;">
-                        <button class="btn-small btn-edit" onclick="editIti(${item.id})">編輯</button>
-                        <button class="btn-small btn-danger" onclick="deleteIti(${item.id})">刪除</button>
+                    <div style="display:flex; flex-direction:column; gap:10px; margin-left:12px;">
+                        <button class="btn-small" onclick="editIti(${item.id})">編輯</button>
+                        <button class="btn-small danger" onclick="deleteIti(${item.id})">刪除</button>
                     </div>
                 </div>
             </div>`;
@@ -310,7 +344,7 @@
         document.getElementById('edit-iti-end').value = item.end || '';
         document.getElementById('edit-iti-note').value = item.note || '';
         document.getElementById('edit-iti-form-container').style.display = 'block';
-        window.scrollTo({ top: document.getElementById('edit-iti-form-container').offsetTop - 20, behavior: 'smooth' });
+        window.scrollTo({ top: document.getElementById('edit-iti-form-container').offsetTop - 100, behavior: 'smooth' });
     }
 
     function saveEditIti() {
@@ -342,20 +376,20 @@
     function renderLuggage() {
         const container = document.getElementById('luggage-list'); container.innerHTML = '';
         appData.luggage.forEach((item) => {
-            const noteStr = item.note ? `<p style="font-size:0.85rem; color:#666; margin-top:4px;">📝 ${item.note}</p>` : '';
+            const noteStr = item.note ? `<p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">📝 ${item.note}</p>` : '';
             
             container.innerHTML += `
-            <div class="card check-row ${item.checked?'strikethrough':''}" style="align-items:center;">
-                <div style="display:flex; gap:12px; flex:1; align-items: center;">
+            <div class="card check-row ${item.checked?'strikethrough':''}" style="align-items:flex-start;">
+                <div style="display:flex; gap:16px; flex:1; align-items: center;">
                     <input type="checkbox" ${item.checked?'checked':''} onchange="toggleLug(${item.id})">
                     <div style="flex:1;">
-                        <span style="font-weight:bold;">${item.name}</span>
+                        <span style="font-weight:700; font-size:1.05rem;">${item.name}</span>
                         ${noteStr}
                     </div>
                 </div>
-                <div style="display:flex; gap:6px; margin-left:10px;">
-                    <button class="btn-small btn-edit" onclick="editLug(${item.id})">編輯</button>
-                    <button class="btn-small btn-danger" onclick="deleteLug(${item.id})">刪除</button>
+                <div style="display:flex; flex-direction:column; gap:10px; margin-left:12px;">
+                    <button class="btn-small" onclick="editLug(${item.id})">編輯</button>
+                    <button class="btn-small danger" onclick="deleteLug(${item.id})">刪除</button>
                 </div>
             </div>`;
         });
@@ -381,7 +415,7 @@
         document.getElementById('edit-lug-name').value = item.name || '';
         document.getElementById('edit-lug-note').value = item.note || '';
         document.getElementById('edit-lug-form-container').style.display = 'block';
-        window.scrollTo({ top: document.getElementById('edit-lug-form-container').offsetTop - 20, behavior: 'smooth' });
+        window.scrollTo({ top: document.getElementById('edit-lug-form-container').offsetTop - 100, behavior: 'smooth' });
     }
 
     function saveEditLug() {
@@ -410,21 +444,19 @@
         const btnUnpurchased = document.getElementById('btn-filter-unpurchased');
         
         if (mode === 'all') {
-            btnAll.className = '';
-            btnAll.style.background = 'var(--primary)';
-            btnAll.style.color = 'white';
-            
-            btnUnpurchased.className = 'btn-outline';
-            btnUnpurchased.style.background = 'white';
-            btnUnpurchased.style.color = 'var(--primary)';
-        } else {
-            btnUnpurchased.className = '';
-            btnUnpurchased.style.background = 'var(--primary)';
-            btnUnpurchased.style.color = 'white';
-            
-            btnAll.className = 'btn-outline';
             btnAll.style.background = 'white';
-            btnAll.style.color = 'var(--primary)';
+            btnAll.style.color = 'var(--text)';
+            btnAll.style.boxShadow = '0 2px 6px rgba(0,0,0,0.1)';
+            btnUnpurchased.style.background = 'transparent';
+            btnUnpurchased.style.color = 'var(--text-muted)';
+            btnUnpurchased.style.boxShadow = 'none';
+        } else {
+            btnUnpurchased.style.background = 'white';
+            btnUnpurchased.style.color = 'var(--text)';
+            btnUnpurchased.style.boxShadow = '0 2px 6px rgba(0,0,0,0.1)';
+            btnAll.style.background = 'transparent';
+            btnAll.style.color = 'var(--text-muted)';
+            btnAll.style.boxShadow = 'none';
         }
         renderShopping();
     }
@@ -438,24 +470,24 @@
 
         const renderItem = (item) => {
             const twd = Math.round(item.price_jpy * appData.rate);
-            const noteStr = item.note ? `<p style="font-size:0.85rem; color:#666; margin-top:4px;">📝 ${item.note}</p>` : '';
+            const noteStr = item.note ? `<p style="font-size:0.85rem; color:var(--text-muted); margin-top:6px;">📝 ${item.note}</p>` : '';
             const imgStr = item.image ? `<img src="${item.image}" class="img-thumbnail" onclick="showImage('${item.image}')">` : '';
             
             return `
             <div class="card ${item.checked?'strikethrough':''}">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="display:flex; gap:12px; flex:1;">
+                <div style="display:flex; justify-content:space-between;">
+                    <div style="display:flex; gap:16px; flex:1;">
                         <input type="checkbox" ${item.checked?'checked':''} onchange="toggleShop(${item.id})">
                         <div style="flex:1;">
-                            <b style="font-size:1.05rem;">${item.name}</b>
-                            <p style="font-size:0.8rem; color:#888; margin-top:2px;">📍 ${item.shop}</p>
+                            <b style="font-size:1.1rem;">${item.name}</b>
+                            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">📍 ${item.shop}</p>
                             ${noteStr}
                             ${imgStr}
                         </div>
                     </div>
-                    <div style="display:flex; gap:6px; margin-left:10px;">
-                        <button class="btn-small btn-edit" onclick="editShop(${item.id})">編輯</button>
-                        <button class="btn-small btn-danger" onclick="deleteShop(${item.id})">刪除</button>
+                    <div style="display:flex; flex-direction:column; gap:10px; margin-left:12px;">
+                        <button class="btn-small" onclick="editShop(${item.id})">編輯</button>
+                        <button class="btn-small danger" onclick="deleteShop(${item.id})">刪除</button>
                     </div>
                 </div>
                 <div class="price-box">
@@ -467,15 +499,15 @@
 
         if (unpurchased.length > 0) {
             if (currentShopFilter === 'all') {
-                container.innerHTML += `<h4 style="margin: 5px 0 15px; color: var(--primary);">🛒 尚未購買</h4>`;
+                container.innerHTML += `<h4 style="margin: 10px 0 16px 4px; color: var(--text); font-size:1.1rem; font-weight:800;">🛒 尚未購買</h4>`;
             }
             unpurchased.forEach(item => { container.innerHTML += renderItem(item); });
         } else if (appData.shopping.length > 0) {
-            container.innerHTML += `<p style="text-align:center; color:#95a5a6; margin: 20px 0; font-weight:bold;">🎉 所有商品都買齊囉！</p>`;
+            container.innerHTML += `<div style="text-align:center; padding: 40px 0;"><span style="font-size:3rem; display:block; margin-bottom:10px;">🎉</span><p style="color:var(--text-muted); font-weight:600;">所有商品都買齊囉！</p></div>`;
         }
 
         if (currentShopFilter === 'all' && purchased.length > 0) {
-            container.innerHTML += `<h4 style="margin: 20px 0 15px; color: #95a5a6; border-bottom: 2px solid #eee; padding-bottom: 5px;">✅ 已購買</h4>`;
+            container.innerHTML += `<h4 style="margin: 30px 0 16px 4px; color: var(--text-muted); font-size:1.1rem; font-weight:700;">✅ 已購買</h4>`;
             purchased.forEach(item => { container.innerHTML += renderItem(item); });
         }
     }
@@ -491,7 +523,7 @@
         document.getElementById('edit-note').value = '';
         document.getElementById('edit-image').value = '';
         document.getElementById('edit-form-container').style.display='block'; 
-        window.scrollTo({ top: document.getElementById('edit-form-container').offsetTop - 20, behavior: 'smooth' });
+        window.scrollTo({ top: document.getElementById('edit-form-container').offsetTop - 100, behavior: 'smooth' });
     }
 
     function editShop(id) {
@@ -507,7 +539,7 @@
         document.getElementById('edit-image').value = ''; 
         
         document.getElementById('edit-form-container').style.display = 'block';
-        window.scrollTo({ top: document.getElementById('edit-form-container').offsetTop - 20, behavior: 'smooth' });
+        window.scrollTo({ top: document.getElementById('edit-form-container').offsetTop - 100, behavior: 'smooth' });
     }
     
     function compressImage(file, callback) {
@@ -573,7 +605,7 @@
         document.getElementById('image-modal').style.display = 'flex';
     }
 
-    // --- 設定與狀態 ---
+    // --- 設定與匯率 ---
     function updateStats() {
         const dL = appData.luggage.filter(l => l.checked).length;
         document.getElementById('stat-luggage').innerText = appData.luggage.length ? Math.round(dL/appData.luggage.length*100)+'%' : '0%';
@@ -584,31 +616,46 @@
         document.getElementById('stat-rate').innerText = appData.rate;
         
         const settingsRateDisplay = document.getElementById('settings-rate-display');
-        if(settingsRateDisplay) { settingsRateDisplay.innerText = "當前系統匯率：1 JPY = " + appData.rate + " TWD"; }
+        if(settingsRateDisplay) { settingsRateDisplay.innerText = "當前系統設定匯率：1 JPY = " + appData.rate + " TWD"; }
+        
+        const manualInput = document.getElementById('manual-rate-input');
+        if(manualInput) { manualInput.value = appData.rate; }
+    }
+
+    function saveManualRate() {
+        const val = parseFloat(document.getElementById('manual-rate-input').value);
+        if(val && val > 0) {
+            appData.rate = val;
+            saveData();
+            document.getElementById('rate-sync-info').innerText = "已套用手動設定匯率";
+            alert("匯率已成功手動更新為: " + val);
+        } else {
+            alert("請輸入有效的匯率數字喔！");
+        }
     }
 
     async function fetchLiveRate() { 
         const btn = document.getElementById('update-rate-btn');
-        document.getElementById('rate-sync-info').innerText = "更新中...";
-        if(btn) btn.innerText = "更新中...";
+        document.getElementById('rate-sync-info').innerText = "網路更新中...";
+        if(btn) btn.innerText = "網路更新中...";
         
         try { 
             const r = await fetch('https://api.exchangerate-api.com/v4/latest/JPY'); 
             const d = await r.json(); 
-            appData.rate = Math.round(d.rates.TWD * 1000)/1000; 
+            appData.rate = Math.round(d.rates.TWD * 10000)/10000; 
             saveData(); 
-            document.getElementById('rate-sync-info').innerText = "最後更新: " + new Date().toLocaleTimeString();
+            document.getElementById('rate-sync-info').innerText = "最後自動更新: " + new Date().toLocaleTimeString();
             
-            if(btn) { btn.innerText = "✓ 已更新"; setTimeout(() => { btn.innerText = "更新最新匯率"; }, 3000); }
+            if(btn) { btn.innerText = "✓ 網路抓取成功"; setTimeout(() => { btn.innerText = "🌐 從網路獲取最新匯率"; }, 3000); }
         } catch(e){ 
-            document.getElementById('rate-sync-info').innerText = "連網失敗"; 
-            if(btn) { btn.innerText = "連線失敗，請稍後再試"; setTimeout(() => { btn.innerText = "更新最新匯率"; }, 3000); }
+            document.getElementById('rate-sync-info').innerText = "連網失敗，請稍後再試或使用手動輸入"; 
+            if(btn) { btn.innerText = "連線失敗"; setTimeout(() => { btn.innerText = "🌐 從網路獲取最新匯率"; }, 3000); }
         } 
     }
 
-    function exportData() { document.getElementById('backup-data').value = btoa(unescape(encodeURIComponent(JSON.stringify(appData)))); alert("備份碼已生成！"); }
-    function importData() { try { const code = document.getElementById('backup-data').value; if(code) { appData = JSON.parse(decodeURIComponent(escape(atob(code)))); saveData(); alert("導入成功！"); location.reload(); } } catch(e) { alert("代碼錯誤！"); } }
-    function resetData() { if(confirm("確定清空所有資料嗎？")) { localStorage.clear(); location.reload(); } }
+    function exportData() { document.getElementById('backup-data').value = btoa(unescape(encodeURIComponent(JSON.stringify(appData)))); alert("備份碼已生成！\n請複製並傳送到手機，或自己保存。"); }
+    function importData() { try { const code = document.getElementById('backup-data').value; if(code) { appData = JSON.parse(decodeURIComponent(escape(atob(code)))); saveData(); alert("資料導入成功！"); location.reload(); } } catch(e) { alert("代碼錯誤，請確認備份碼是否完整！"); } }
+    function resetData() { if(confirm("⚠️ 警告：確定要清空所有資料嗎？此動作無法復原！")) { localStorage.clear(); location.reload(); } }
 
     updateStats(); fetchLiveRate();
 </script>
