@@ -1209,9 +1209,12 @@
         else { alert("請輸入有效的匯率數字喔！"); }
     }
 
-    async function fetchLiveRate() { 
+   async function fetchLiveRate() { 
         const btn = document.getElementById('update-rate-btn');
+        const info = document.getElementById('rate-sync-info'); // 抓取首頁的提示文字
+        
         if(btn) btn.innerText = "更新中...";
+        if(info) info.innerText = "網路更新中..."; // 剛打開時顯示正在更新
         
         try { 
             const r = await fetch('https://api.exchangerate-api.com/v4/latest/TWD'); 
@@ -1229,11 +1232,17 @@
                     btn.innerText = "✓ 已更新"; 
                     setTimeout(() => { btn.innerText = "網路最新匯率"; }, 3000); 
                 }
+                if(info) {
+                    info.innerText = "最後自動更新: " + new Date().toLocaleTimeString(); // 成功後顯示當下時間
+                }
             }
         } catch(e){ 
             if(btn) { 
                 btn.innerText = "沒有網路不能更新"; 
                 setTimeout(() => { btn.innerText = "網路最新匯率"; }, 3000); 
+            }
+            if(info) {
+                info.innerText = "連網失敗，請稍後再試"; // 失敗時首頁也會提示
             }
         } 
     }
