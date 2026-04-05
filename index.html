@@ -73,7 +73,7 @@
         .stat-label { font-weight: 800; font-size: 1.05rem; color: var(--main-text); }
         .stat-value { font-weight: 900; font-size: 1.15rem; }
 
-        /* 📱 底部彩色圓圈導覽列 (純淨極簡線條) */
+        /* 📱 底部純淨極簡線條 SVG 導覽列 */
         .bottom-nav { 
             position: fixed; bottom: 0; width: 100%; background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(10px); display: flex; justify-content: space-around; 
@@ -156,12 +156,12 @@
         .filter-pill.active.acc { background: var(--color-acc); color: white; border-color: var(--color-acc); box-shadow: 2px 2px 0 rgba(180, 155, 170, 0.4); }
         .filter-pill.active.shop { background: var(--color-babyblue); color: white; border-color: var(--color-babyblue); box-shadow: 2px 2px 0 rgba(143, 174, 193, 0.4); }
 
-        /* 🧮 計算機面板：位置與按鍵精準調配 */
+        /* 🧮 計算機面板 */
         .calc-panel { background: var(--input-bg); border: 2px solid var(--main-border); border-radius: 16px; padding: 16px; margin-bottom: 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
         .calc-btn { padding: 14px 0; background: white; border: 2px solid var(--main-border); border-radius: 12px; font-weight: 900; font-size: 1.2rem; color: var(--main-text); cursor: pointer; box-shadow: 1px 2px 0 rgba(200,182,166,0.3);}
         .calc-btn:active { transform: translate(1px,1px); box-shadow: none; }
         .calc-btn.op { background: var(--bg-cream); color: var(--main-btn); }
-        .calc-btn.eq { background: var(--color-yellow); color: var(--main-text); border-color: var(--color-yellow); grid-column: span 2; box-shadow: 1px 2px 0 rgba(226, 185, 101, 0.4);}
+        .calc-btn.eq { background: var(--main-btn); color: white; border-color: var(--main-btn); grid-column: span 2; box-shadow: 1px 2px 0 rgba(181, 157, 139, 0.4);}
         .calc-display { grid-column: span 4; background: white; border: 2px solid var(--main-border); border-radius: 12px; padding: 12px 16px; text-align: right; font-size: 1.6rem; font-weight: 900; margin-bottom: 8px; overflow: hidden; color: var(--main-text);}
 
         .img-thumbnail { width: 90px; height: 90px; object-fit: cover; border-radius: 12px; margin-top: 12px; display: block; border: 2px solid var(--main-border); box-shadow: 2px 2px 0 rgba(200, 182, 166, 0.3); }
@@ -238,6 +238,7 @@
                     <input type="number" id="calc-input-twd" placeholder="輸入台幣" oninput="runCalculator('twd')" style="margin: 0; padding: 12px 10px; font-size: 1.2rem; background: #fff;">
                 </div>
             </div>
+            <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 12px;" id="rate-sync-info">自動同步中...</p>
         </div>
     </div>
 
@@ -379,8 +380,8 @@
             <button type="button" class="calc-btn" onclick="calcInput('3')">3</button>
             <button type="button" class="calc-btn" onclick="calcInput('.')">.</button>
             
+            <button type="button" class="calc-btn eq" onclick="calcInput('=')" style="grid-column: span 2; background: var(--main-btn); border-color: var(--main-btn); color: white;">= 結算</button>
             <button type="button" class="calc-btn" onclick="calcInput('0')" style="grid-column: span 2;">0</button>
-            <button type="button" class="calc-btn eq" onclick="calcInput('=')">= 結算</button>
             
             <button type="button" class="calc-btn" onclick="useCalcAmount()" style="grid-column: span 4; background: var(--color-acc); color: white; border-color: var(--color-acc); margin-top: 8px; box-shadow: 2px 3px 0 rgba(180, 155, 170, 0.3);">
                 帶入並新增支出
@@ -392,7 +393,7 @@
             <input type="hidden" id="edit-acc-id">
             
             <input type="text" id="edit-acc-name" placeholder="這筆錢花在哪？ (如: 一蘭拉麵)">
-            <input type="number" id="edit-acc-jpy" placeholder="花費金額">
+            <input type="number" id="edit-acc-jpy" placeholder="花費外幣金額">
 
             <div style="display: flex; gap: 10px; margin-bottom: 12px;">
                 <input type="date" id="edit-acc-date" style="flex: 1.2;">
@@ -401,11 +402,16 @@
                 </select>
             </div>
             
+            <select id="edit-acc-pay" style="margin-bottom: 12px;">
+                <option value="card">💳 刷卡 (自動網路即時匯率)</option>
+                <option value="cash">💵 付現 (固定手動現金匯率)</option>
+            </select>
+            
             <input type="text" id="edit-acc-note" placeholder="備註用途 (選填)">
             
             <div style="display: flex; gap: 10px; margin-top: 12px;">
-                <button onclick="document.getElementById('edit-acc-form-container').style.display='none'" class="btn-outline" style="flex: 1;">取消</button>
-                <button onclick="saveAccounting()" style="flex: 2; background: var(--color-acc); border-color: var(--color-acc); color: white;">儲存</button>
+                <button type="button" onclick="document.getElementById('edit-acc-form-container').style.display='none'" class="btn-outline" style="flex: 1;">取消</button>
+                <button type="button" id="acc-save-btn" onclick="saveAccounting()" style="flex: 2; background: var(--color-acc); border-color: var(--color-acc); color: white;">儲存紀錄</button>
             </div>
         </div>
         <div id="accounting-list"></div>
@@ -495,20 +501,21 @@
         manualRates: { JPY: 0.215, KRW: 0.024, USD: 32.5, EUR: 35.0, THB: 0.95 },
         luggage: [
             { id: 1, name: "護照與簽證影本", note: "放在隨身小包", checked: false },
-            { id: 2, name: "日幣現金 & 信用卡", note: "確認是否有海外回饋", checked: false }
+            { id: 2, name: "外幣現金 & 信用卡", note: "確認是否有海外回饋", checked: false }
         ], 
         itinerary: [
-            { id: 1, date: "Day 1", realDate: "2026-04-05", time: "10:30", end: "抵達國際機場", note: "先去買交通通票", checked: false },
-            { id: 2, date: "Day 1", realDate: "2026-04-05", time: "12:30", end: "熱門排隊拉麵店", note: "記得加半熟蛋", checked: false }
+            { id: 1, date: "Day 1", realDate: "2026-04-05", time: "10:30", end: "國際機場", note: "先去買交通通票", checked: false },
+            { id: 2, date: "Day 1", realDate: "2026-04-05", time: "12:30", end: "熱門排隊美食", note: "記得先抽號碼牌", checked: false },
+            { id: 3, date: "Day 2", realDate: "2026-04-06", time: "09:00", end: "當地著名景點", note: "體驗當地文化", checked: false }
         ], 
         shopping: [
-            { id: 1, name: "EVE 止痛藥", qty: "2", price_jpy: "680", forWho: "自己買", shop: "大國藥妝", note: "白色包裝", image: "", checked: false },
-            { id: 2, name: "國際電壓吹風機", qty: "1", price_jpy: "15000", forWho: "家人", shop: "Bic Camera", note: "最新型號", image: "", checked: false },
-            { id: 3, name: "合利他命 EX", qty: "3", price_jpy: "4500", forWho: "代購", shop: "松本清", note: "朋友托買", image: "", checked: false }
+            { id: 1, name: "紀念品明信片", qty: "2", price_jpy: "680", forWho: "自己買", shop: "景點紀念品店", note: "挑選特色款", image: "", checked: false },
+            { id: 2, name: "國際電壓吹風機", qty: "1", price_jpy: "15000", forWho: "家人", shop: "大型電器行", note: "最新型號", image: "", checked: false },
+            { id: 3, name: "知名保健食品", qty: "3", price_jpy: "4500", forWho: "代購", shop: "連鎖藥妝店", note: "朋友托買", image: "", checked: false }
         ],
         accounting: [
-            { id: 1, name: "機場快線車票", category: "交通", price_jpy: "2500", date: "2026-04-05", note: "直達市區" },
-            { id: 2, name: "拉麵午餐", category: "飲食", price_jpy: "1200", date: "2026-04-05", note: "" }
+            { id: 1, name: "機場快線車票", category: "交通", price_jpy: "2500", twd_price: 538, date: "2026-04-05", payMethod: "card", note: "直達市區" },
+            { id: 2, name: "道地午餐", category: "飲食", price_jpy: "1200", twd_price: 258, date: "2026-04-05", payMethod: "cash", note: "" }
         ]
     };
     
@@ -517,7 +524,6 @@
     if (!appData) {
         appData = defaultData;
     } else {
-        // 相容舊版資料結構
         if (appData.rate !== undefined || appData.autoRate !== undefined) { 
             appData.autoRates = { JPY: appData.autoRate || 0.2145, KRW: 0.0235, USD: 32.1, EUR: 34.5, THB: 0.91 };
             appData.manualRates = { JPY: appData.manualRate || 0.215, KRW: 0.024, USD: 32.5, EUR: 35.0, THB: 0.95 };
@@ -529,6 +535,8 @@
         if (!appData.itinerary) appData.itinerary = defaultData.itinerary;
         if (!appData.shopping) appData.shopping = defaultData.shopping;
         if (!appData.accounting) appData.accounting = defaultData.accounting;
+        
+        appData.accounting.forEach(a => { if(!a.payMethod) a.payMethod = 'cash'; });
     }
 
     let currentShopFilter = 'all';
@@ -547,6 +555,7 @@
 
     function saveData() { localStorage.setItem('jpTravelApp', JSON.stringify(appData)); updateStats(); }
 
+    // 💯 導航與分頁記憶
     function nav(pageId) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => {
@@ -558,6 +567,8 @@
         activeNav.classList.add('active');
         const activeBg = activeNav.querySelector('.nav-icon-bg');
         activeBg.style.backgroundColor = getComputedStyle(activeBg).getPropertyValue('--bg-color');
+        
+        localStorage.setItem('jpTravelApp_lastTab', pageId);
         
         if(pageId === 'itinerary') renderItinerary();
         if(pageId === 'luggage') renderLuggage();
@@ -582,9 +593,7 @@
     }
 
     // --- 🧮 獨立計算機功能 ---
-    function toggleMainCalculator() { 
-        toggleForm('main-calc-panel');
-    }
+    function toggleMainCalculator() { toggleForm('main-calc-panel'); }
     
     function calcInput(key) {
         const display = document.getElementById('calc-res');
@@ -614,7 +623,7 @@
         }
     }
 
-    // --- 首頁雙向匯率 (支援多國) ---
+    // --- 💱 首頁雙向匯率 (修復按鈕顏色Bug) ---
     function changeCurrency() {
         appData.currency = document.getElementById('currency-selector').value;
         saveData();
@@ -624,13 +633,15 @@
         calcMode = mode;
         const btnAuto = document.getElementById('calc-btn-auto');
         const btnManual = document.getElementById('calc-btn-manual');
-        if (mode === 'auto') {
-            btnAuto.className = '';
-            btnManual.className = 'btn-outline';
-        } else {
-            btnManual.className = '';
-            btnAuto.className = 'btn-outline';
-        }
+        
+        btnAuto.className = mode === 'auto' ? '' : 'btn-outline';
+        btnAuto.style.background = mode === 'auto' ? 'var(--main-btn)' : 'var(--card-bg)';
+        btnAuto.style.color = mode === 'auto' ? 'white' : 'var(--main-text)';
+        
+        btnManual.className = mode === 'manual' ? '' : 'btn-outline';
+        btnManual.style.background = mode === 'manual' ? 'var(--main-btn)' : 'var(--card-bg)';
+        btnManual.style.color = mode === 'manual' ? 'white' : 'var(--main-text)';
+        
         runCalculator('jpy');
     }
 
@@ -646,7 +657,7 @@
         }
     }
 
-    // --- 記帳功能 (紫丁香色) ---
+    // --- 記帳功能 (💯 鎖死金額與支付方式) ---
     function setAccFilter(cat, el) {
         currentAccFilter = cat;
         document.querySelectorAll('#accounting .filter-pill').forEach(p => p.classList.remove('active'));
@@ -656,7 +667,6 @@
 
     function renderAccounting() {
         const container = document.getElementById('accounting-list'); container.innerHTML = '';
-        let totalForeign = 0;
         const c = appData.currency;
         const sym = currInfo[c].s;
         
@@ -665,9 +675,16 @@
 
         filtered.sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id).forEach(item => {
             const price = Number(item.price_jpy) || 0;
-            totalForeign += price;
-            const twdAuto = Math.round(price * appData.autoRates[c]);
-            const twdManual = Math.round(price * appData.manualRates[c]);
+            
+            // 讀取已經鎖死固定的台幣金額
+            let twdFixed = item.twd_price;
+            if (twdFixed === undefined) { // 如果是舊資料就補算
+                twdFixed = Math.round(price * (item.payMethod === 'card' ? appData.autoRates[c] : appData.manualRates[c]));
+                item.twd_price = twdFixed;
+            }
+            
+            const payTag = item.payMethod === 'card' ? '💳 刷卡' : '💵 付現';
+
             container.innerHTML += `
             <div class="card" style="padding: 16px 20px;">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
@@ -679,7 +696,10 @@
                         <b style="font-size:1.15rem; color:var(--main-text); display:block; margin-bottom:6px;">${item.name || '未命名支出'}</b>
                         <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;">
                             <span style="font-size:1.3rem; font-weight:900; color:var(--main-text);">${sym} ${price.toLocaleString()}</span>
-                            <div style="display:flex; gap:6px;"><span class="rate-tag">網 NT$${twdAuto.toLocaleString()}</span><span class="rate-tag">手 NT$${twdManual.toLocaleString()}</span></div>
+                            <div style="display:flex; gap:6px;">
+                                <span class="rate-tag">${payTag}</span>
+                                <span class="rate-tag" style="color:var(--color-acc); border-color:var(--color-acc);">NT$ ${twdFixed.toLocaleString()}</span>
+                            </div>
                         </div>
                         ${item.note ? `<p style="font-size:0.9rem; color:var(--text-muted); font-weight:700; margin-top:8px;">📝 ${item.note}</p>` : ''}
                     </div>
@@ -690,8 +710,6 @@
                 </div>
             </div>`;
         });
-        document.getElementById('acc-total-jpy').innerText = totalForeign.toLocaleString();
-        document.getElementById('acc-total-twd').innerText = Math.round(totalForeign * appData.autoRates[c]).toLocaleString();
     }
 
     function openAccForm() {
@@ -701,6 +719,7 @@
         document.getElementById('edit-acc-jpy').value = '';
         document.getElementById('edit-acc-note').value = '';
         document.getElementById('edit-acc-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('edit-acc-pay').value = 'card';
     }
 
     function editAcc(id) {
@@ -710,6 +729,7 @@
         document.getElementById('edit-acc-id').value = item.id;
         document.getElementById('edit-acc-date').value = item.date || '';
         document.getElementById('edit-acc-cat').value = item.category || '其他';
+        document.getElementById('edit-acc-pay').value = item.payMethod || 'card';
         document.getElementById('edit-acc-jpy').value = item.price_jpy || '';
         document.getElementById('edit-acc-name').value = item.name || '';
         document.getElementById('edit-acc-note').value = item.note || '';
@@ -718,17 +738,41 @@
         window.scrollTo({ top: document.getElementById('edit-acc-form-container').offsetTop - 20, behavior: 'smooth' });
     }
 
-    function saveAccounting() {
+    // 💯 刷卡自動抓匯率並永久鎖死金額
+    async function saveAccounting() {
         const id = document.getElementById('edit-acc-id').value;
         const name = document.getElementById('edit-acc-name').value;
         const jpy = document.getElementById('edit-acc-jpy').value;
         const date = document.getElementById('edit-acc-date').value;
         const cat = document.getElementById('edit-acc-cat').value;
+        const pay = document.getElementById('edit-acc-pay').value;
         const note = document.getElementById('edit-acc-note').value; 
         
         if(!jpy) return alert("請輸入金額喔！");
 
-        const entry = { id: id ? Number(id) : Date.now(), name, price_jpy: jpy, date, category: cat, note };
+        const c = appData.currency;
+        let rateToUse = appData.manualRates[c];
+
+        if (pay === 'card') {
+            const saveBtn = document.getElementById('acc-save-btn');
+            const orgText = saveBtn.innerText;
+            saveBtn.innerText = '連線結算中...';
+            try { 
+                const r = await fetch('https://api.exchangerate-api.com/v4/latest/TWD'); 
+                const d = await r.json(); 
+                if(d.rates && d.rates[c]) {
+                    appData.autoRates[c] = Math.round((1 / d.rates[c]) * 10000)/10000;
+                }
+            } catch(e) {
+                console.log("Offline, using cached auto rate.");
+            }
+            rateToUse = appData.autoRates[c];
+            saveBtn.innerText = orgText;
+        }
+
+        const twd = Math.round(Number(jpy) * rateToUse);
+
+        const entry = { id: id ? Number(id) : Date.now(), name, price_jpy: jpy, twd_price: twd, date, category: cat, payMethod: pay, note };
         if(id) { appData.accounting = appData.accounting.map(a => a.id == id ? entry : a); }
         else { appData.accounting.push(entry); }
         
@@ -738,8 +782,7 @@
 
     function deleteAcc(id) { if(confirm("確定刪除這筆紀錄？")) { appData.accounting = appData.accounting.filter(a => a.id != id); saveData(); renderAccounting(); } }
 
-
-    // --- 行程功能 ---
+    // --- 行程功能 (💯 全局跨日自動接續導航) ---
     function renderItinerary() {
         const container = document.getElementById('itinerary-list'); container.innerHTML = '';
         const sortedIti = [...appData.itinerary].sort((a, b) => {
@@ -748,18 +791,19 @@
             return a.time.localeCompare(b.time);
         });
 
-        let prevLocation = null;
+        let prevLocation = null; // 全局跨日記憶
         let currentDayLabel = "";
 
         sortedIti.forEach((item) => {
+            // 導航換成 Deep Link (target="_blank")，跳轉 Google Maps APP 不卡視窗
             let url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.end)}`;
-            let btnHtml = `<button class="map-btn" onclick="window.open('${url}')">📍 導航前往</button>`;
+            let btnHtml = `<button class="map-btn" onclick="window.open('${url}', '_blank')">📍 導航前往</button>`;
             
             if (prevLocation && !item.checked) {
                 url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(prevLocation)}&destination=${encodeURIComponent(item.end)}`;
-                btnHtml = `<button class="map-route-btn" onclick="window.open('${url}')">🚗 路線與時間</button>`;
+                btnHtml = `<button class="map-route-btn" onclick="window.open('${url}', '_blank')">🚗 路線與時間</button>`;
             }
-            prevLocation = item.end;
+            prevLocation = item.end; // 記錄下來給下一站用 (包含明天的第一站)
 
             if(item.date !== currentDayLabel) {
                 currentDayLabel = item.date;
@@ -944,7 +988,7 @@
     }
     function deleteLug(id) { if(confirm("確定要刪除這個項目嗎？")) { appData.luggage = appData.luggage.filter(l=>l.id!=id); saveData(); renderLuggage(); } }
 
-    // --- 🛍️ 購物清單 (加入優先級排序功能) ---
+    // --- 🛍️ 購物清單 ---
     function setShopForFilter(forWho, el) {
         currentShopForFilter = forWho;
         document.querySelectorAll('#shop-filter-bar .filter-pill').forEach(p => p.classList.remove('active'));
@@ -957,7 +1001,6 @@
         const c = appData.currency;
         const sym = currInfo[c].s;
 
-        // 💯 過濾並自動按照優先順序排序：自己買 > 家人 > 代購
         const filteredByFor = currentShopForFilter === '全部' ? appData.shopping : appData.shopping.filter(s => (s.forWho || '自己買') === currentShopForFilter);
         
         const unpurchased = filteredByFor.filter(s => !s.checked);
@@ -1108,12 +1151,11 @@
     function deleteShop(id) { if(confirm("確定要刪除這個商品嗎？")) { appData.shopping = appData.shopping.filter(s=>s.id!=id); saveData(); renderShopping(); } }
     function showImage(src) { document.getElementById('modal-img').src = src; document.getElementById('image-modal').style.display = 'flex'; }
 
-    // --- 系統更新與多國狀態 ---
+    // --- 系統更新計算 ---
     function updateStats() {
         const c = appData.currency || 'JPY';
         const sym = currInfo[c].s;
         
-        // 替換標籤
         document.getElementById('currency-selector').value = c;
         document.getElementById('calc-label-src').innerText = `${currInfo[c].flag} ${currInfo[c].n} (${c})`;
         document.querySelectorAll('.curr-sym').forEach(el => el.innerText = sym);
@@ -1126,11 +1168,23 @@
         document.getElementById('stat-shopping-total').innerText = appData.shopping.length;
         
         let totalForeign = 0;
-        appData.accounting.forEach(a => totalForeign += Number(a.price_jpy));
+        let totalTwd = 0;
+        
+        appData.accounting.forEach(a => {
+            const price = Number(a.price_jpy) || 0;
+            totalForeign += price;
+            
+            let twdFixed = a.twd_price;
+            if (twdFixed === undefined) {
+                twdFixed = Math.round(price * (a.payMethod === 'card' ? appData.autoRates[c] : appData.manualRates[c]));
+            }
+            totalTwd += twdFixed;
+        });
+
         const statAccJpy = document.getElementById('stat-acc-jpy');
         if (statAccJpy) statAccJpy.innerText = totalForeign.toLocaleString();
         const statAccTwd = document.getElementById('stat-acc-twd');
-        if (statAccTwd) statAccTwd.innerText = Math.round(totalForeign * appData.autoRates[c]).toLocaleString();
+        if (statAccTwd) statAccTwd.innerText = totalTwd.toLocaleString();
 
         const autoRate = appData.autoRates[c] || 0.21;
         const manualRate = appData.manualRates[c] || 0.21;
@@ -1155,13 +1209,11 @@
         else { alert("請輸入有效的匯率數字喔！"); }
     }
 
-    // 💯 抓取多國匯率並明確提示
     async function fetchLiveRate() { 
         const btn = document.getElementById('update-rate-btn');
         if(btn) btn.innerText = "更新中...";
         
         try { 
-            // 取得 TWD 對所有貨幣的匯率，再反推 1外幣 = ? TWD
             const r = await fetch('https://api.exchangerate-api.com/v4/latest/TWD'); 
             const d = await r.json(); 
             
@@ -1191,15 +1243,10 @@
     function resetData() { if(confirm("⚠️ 警告：確定要清空所有資料嗎？此動作無法復原！")) { localStorage.clear(); location.reload(); } }
 
     document.addEventListener("DOMContentLoaded", () => {
-        const homeNav = document.getElementById('nav-home');
-        if(homeNav) {
-            const activeBg = homeNav.querySelector('.nav-icon-bg');
-            if(activeBg) {
-                activeBg.style.backgroundColor = getComputedStyle(activeBg).getPropertyValue('--bg-color');
-                activeBg.style.opacity = '1';
-            }
-        }
+        const lastTab = localStorage.getItem('jpTravelApp_lastTab') || 'home';
+        nav(lastTab);
         setCalcMode('auto');
+        fetchLiveRate();
     });
 </script>
 </body>
