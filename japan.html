@@ -1547,7 +1547,7 @@
                 appData.autoRates.EUR = Math.round((1 / d.rates.EUR) * 10000)/10000;
                 appData.autoRates.THB = Math.round((1 / d.rates.THB) * 10000)/10000;
                 appData.autoRates.TWD = 1;
-                saveData(); 
+                updateStats(); 
                 if(btn) { btn.innerText = "✓ 已更新"; setTimeout(() => { btn.innerText = "網路最新匯率"; }, 3000); }
                 if(info) { const now = new Date(); info.innerText = "最後自動更新: " + now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); }
             }
