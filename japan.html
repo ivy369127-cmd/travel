@@ -863,7 +863,7 @@
             if (dayA !== dayB) return dayA.localeCompare(dayB, undefined, {numeric: true});
             // 2. 天數一樣就比時間 (10:00, 12:00...)
             const timeA = a.time || "00:00"; const timeB = b.time || "00:00";
-            return timeA.compare(timeB);
+            return timeA.localeCompare(timeB);
         });
 
         sortedIti.forEach(i => {
