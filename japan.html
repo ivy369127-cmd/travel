@@ -851,59 +851,44 @@
         }
     }
 
-    // --- 🗓️ 行程功能 ---
+// --- 🗓️ 行程功能（加入自動排序邏輯） ---
     function renderItinerary() {
-        const container = document.getElementById('itinerary-list'); container.innerHTML = '';
-        let prevLocation = null; let currentDayLabel = "";
+        const c = document.getElementById('itinerary-list');
+        c.innerHTML = '';
+        
+        // 💡 關鍵：在顯示前先按「天數」和「時間」進行排序
+        const sortedIti = [...appData.itinerary].sort((a, b) => {
+            // 1. 先比天數 (Day 1, Day 2...)
+            const dayA = a.date || ""; const dayB = b.date || "";
+            if (dayA !== dayB) return dayA.localeCompare(dayB, undefined, {numeric: true});
+            // 2. 天數一樣就比時間 (10:00, 12:00...)
+            const timeA = a.time || "00:00"; const timeB = b.time || "00:00";
+            return timeA.compare(timeB);
+        });
 
-        appData.itinerary.forEach((item) => {
-            let url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.end)}`;
-            let btnHtml = `<button class="map-btn" onclick="window.open('${url}', '_blank')">📍 導航前往</button>`;
-            if (prevLocation && !item.checked) {
-                url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(prevLocation)}&destination=${encodeURIComponent(item.end)}`;
-                btnHtml = `<button class="map-route-btn" onclick="window.open('${url}', '_blank')">🚗 路線與時間</button>`;
-            }
-            prevLocation = item.end;
-
-            if(item.date !== currentDayLabel) {
-                currentDayLabel = item.date; const shortDate = formatShortDate(item.realDate); const displayTitle = shortDate ? `${item.date} (${shortDate})` : item.date;
-                container.innerHTML += `
-                <div style="background: var(--card-bg); border: 2px solid var(--main-border); border-radius: 20px; display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; margin: 24px 0 20px; box-shadow: 2px 3px 0 rgba(200, 182, 166, 0.3);">
-                    <span style="color: var(--main-border); font-weight: 900; font-size:1.1rem;"><</span>
-                    <span style="color: var(--color-matcha); font-size: 1.2rem; font-weight: 900;">${displayTitle}</span>
-                    <span style="color: var(--main-border); font-weight: 900; font-size:1.1rem;">></span>
-                </div>`;
-            }
-
-            const noteStr = item.note ? `<div style="background:var(--bg-cream); padding:12px 14px; border-radius:12px; margin:16px 0 12px 0; font-weight:700; font-size:0.95rem; color:var(--main-text); border: 1px dashed var(--main-border); display:flex; align-items:flex-start; gap:8px;"><span>💡 ${item.note}</span></div>` : '';
-            
-            container.innerHTML += `
-            <div class="timeline-container ${item.checked?'strikethrough':''}" data-id="${item.id}">
+        sortedIti.forEach(i => {
+            c.innerHTML += `<div class="timeline-container ${i.checked?'strikethrough':''}" data-id="${i.id}">
                 <div class="timeline-left">
-                    <div class="timeline-time">${item.time || '—'}</div>
+                    <div class="timeline-time">${i.time||'—'}</div>
                     <div class="timeline-line"></div>
                 </div>
                 <div class="card timeline-card">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div style="flex:1;">
-                            <p style="font-weight:900; font-size:1.25rem; margin-bottom:8px;">${item.end}</p>
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                <input type="checkbox" ${item.checked?'checked':''} onchange="toggleIti(${item.id})">
-                                <span style="font-size:0.9rem; color:var(--text-muted); font-weight:700;">打卡確認</span>
-                            </div>
+                            <b style="font-size:1.15rem;">${i.end}</b>
+                            <p style="margin-top:4px;"><input type="checkbox" ${i.checked?'checked':''} onchange="toggleIti(${i.id})"> 打卡確認</p>
                         </div>
-                        <div style="display:flex; gap:8px; margin-left:12px; flex-wrap:wrap; justify-content:flex-end;">
-                            <button class="icon-btn" onclick="duplicateIti(${item.id})" style="width:36px; height:36px; font-size: 1.2rem;" title="複製先編輯">⧉</button>
-                            <button class="icon-btn" onclick="editIti(${item.id})" style="width:36px; height:36px;">✎</button>
-                            <button class="icon-btn danger" onclick="deleteIti(${item.id})" style="width:36px; height:36px;">✕</button>
+                        <div style="display:flex; gap:8px;">
+                            <button class="icon-btn" onclick="duplicateIti(${i.id})" title="複製">⧉</button>
+                            <button class="icon-btn" onclick="editIti(${i.id})">✎</button>
+                            <button class="icon-btn danger" onclick="deleteIti(${i.id})">✕</button>
                         </div>
                     </div>
-                    ${noteStr}
-                    ${!item.checked ? btnHtml : ''}
                 </div>
             </div>`;
         });
-        setTimeout(() => initDrag('itinerary-list', 'itinerary'), 50);
+        // 保持手動拖曳功能
+        initDrag('itinerary-list', 'itinerary');
     }
     
     function toggleIti(id) { const i = appData.itinerary.find(x=>x.id==id); i.checked = !i.checked; saveData(); renderItinerary(); }
