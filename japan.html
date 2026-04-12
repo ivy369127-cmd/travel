@@ -848,13 +848,12 @@
         }
     }
 
-    // --- 🗓️ 行程功能 ---
+    // --- 🗓️ 行程功能（原地排序，不因打勾跳動） ---
     function renderItinerary() {
         const c = document.getElementById('itinerary-list'); c.innerHTML = '';
         
-        // 💡 打勾往後排功能恢復
+        // 💡 只按天數和時間排序，不看 checked 狀態，這樣導航才不會斷掉
         const sortedIti = [...appData.itinerary].sort((a, b) => {
-            if (a.checked !== b.checked) return a.checked ? 1 : -1;
             const dayA = a.date || ""; const dayB = b.date || "";
             if (dayA !== dayB) return dayA.localeCompare(dayB, undefined, {numeric: true});
             const timeA = a.time || "00:00"; const timeB = b.time || "00:00";
@@ -874,6 +873,7 @@
                 </div>`;
             }
 
+            // 💡 導航邏輯保持抓取「上一筆」地點
             let url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(i.end)}`;
             let btnHtml = `<button class="map-btn" onclick="window.open('${url}', '_blank')">📍 導航前往</button>`;
             if (prevLocation && !i.checked) {
@@ -913,53 +913,6 @@
         initDrag('itinerary-list', 'itinerary');
     }
     
-    function toggleIti(id) { const i = appData.itinerary.find(x=>x.id==id); i.checked = !i.checked; saveData(); renderItinerary(); }
-    
-    function openItiForm() {
-        document.getElementById('iti-form-title').innerText = '新增行程';
-        document.getElementById('edit-iti-id').value = ''; document.getElementById('edit-iti-end').value = ''; document.getElementById('edit-iti-note').value = '';
-        const btn = document.getElementById('iti-save-btn'); btn.setAttribute('onclick', 'addItinerary()'); btn.innerText = '新增';
-    }
-
-    function addItinerary() { 
-        const d = document.getElementById('edit-iti-day').value; const rd = document.getElementById('edit-iti-date').value;
-        const t = document.getElementById('edit-iti-time').value; const e = document.getElementById('edit-iti-end').value; const n = document.getElementById('edit-iti-note').value;
-        if(e){ 
-            appData.itinerary.push({id:Date.now(), date:d, realDate:rd, time:t, end:e, note:n, checked:false}); 
-            document.getElementById('edit-iti-form-container').style.display = 'none'; saveData(); renderItinerary();
-        }
-    }
-
-    function editIti(id) {
-        const item = appData.itinerary.find(i => i.id == id); if(!item) return;
-        document.getElementById('iti-form-title').innerText = '編輯行程';
-        document.getElementById('edit-iti-id').value = item.id;
-        document.getElementById('edit-iti-day').value = item.date || 'Day 1'; document.getElementById('edit-iti-date').value = item.realDate || '';
-        document.getElementById('edit-iti-time').value = item.time || ''; document.getElementById('edit-iti-end').value = item.end || ''; document.getElementById('edit-iti-note').value = item.note || '';
-        const btn = document.getElementById('iti-save-btn'); btn.setAttribute('onclick', 'saveEditIti()'); btn.innerText = '儲存';
-        document.getElementById('edit-iti-form-container').style.display = 'block'; window.scrollTo({ top: document.getElementById('edit-iti-form-container').offsetTop - 80, behavior: 'smooth' });
-    }
-
-    function saveEditIti() {
-        const id = document.getElementById('edit-iti-id').value; const e = document.getElementById('edit-iti-end').value; if(!e) return;
-        const index = appData.itinerary.findIndex(x => x.id == id);
-        if(index > -1) {
-            appData.itinerary[index].date = document.getElementById('edit-iti-day').value; appData.itinerary[index].realDate = document.getElementById('edit-iti-date').value;
-            appData.itinerary[index].time = document.getElementById('edit-iti-time').value; appData.itinerary[index].end = e; appData.itinerary[index].note = document.getElementById('edit-iti-note').value;
-            document.getElementById('edit-iti-form-container').style.display = 'none'; saveData(); renderItinerary();
-        }
-    }
-
-    function duplicateIti(id) {
-        const item = appData.itinerary.find(i => i.id == id); if(!item) return;
-        openItiForm(); 
-        document.getElementById('edit-iti-day').value = item.date || 'Day 1'; document.getElementById('edit-iti-time').value = item.time || '';
-        document.getElementById('edit-iti-end').value = item.end || ''; document.getElementById('edit-iti-note').value = item.note || '';
-        document.getElementById('edit-iti-form-container').style.display = 'block'; window.scrollTo({ top: document.getElementById('edit-iti-form-container').offsetTop - 80, behavior: 'smooth' });
-    }
-
-    function deleteIti(id) { if(confirm("確定要刪除這個行程嗎？")) { appData.itinerary = appData.itinerary.filter(i=>i.id!=id); saveData(); renderItinerary(); } }
-
     // --- 🧳 行李功能 ---
     function setLugOwner(owner) { currentLugOwner = owner; renderLuggage(); }
     
